@@ -6,7 +6,10 @@ from google import genai
 from google.genai import types
 
 app = Flask(__name__)
-CORS(app, origins=["https://bendineadem04-collab.github.io"])
+CORS(app, origins=[
+    "https://bendineadem04.github.io",
+    "https://bendineadem04-collab.github.io"
+])
 
 
 @app.get("/")
