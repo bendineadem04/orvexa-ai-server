@@ -1,9 +1,11 @@
 import os
+
 from flask import Flask, request, jsonify
 from google import genai
 from google.genai import types
 
 app = Flask(__name__)
+
 
 @app.get("/")
 def home():
@@ -12,22 +14,28 @@ def home():
         "status": "online"
     })
 
+
 @app.get("/health")
 def health():
     return jsonify({"ok": True})
+
 
 @app.post("/chat")
 def chat():
     api_key = os.environ.get("GEMINI_API_KEY")
 
     if not api_key:
-        return jsonify({"error": "API key is not configured"}), 500
+        return jsonify({
+            "error": "API key is not configured"
+        }), 500
 
     data = request.get_json(silent=True) or {}
     messages = data.get("messages", [])
 
     if not isinstance(messages, list) or not messages:
-        return jsonify({"error": "No messages provided"}), 400
+        return jsonify({
+            "error": "No messages provided"
+        }), 400
 
     contents = []
 
@@ -38,28 +46,37 @@ def chat():
         role = message.get("role")
         text = message.get("content", "")
 
-        if role not in ("user", "assistant") or not isinstance(text, str):
+        if role not in ("user", "assistant"):
             continue
 
-        if text.strip():
-            contents.append({
-                "role": "user" if role == "user" else "model",
-                "parts": [{"text": text[:8000]}]
-            })
+        if not isinstance(text, str) or not text.strip():
+            continue
+
+        contents.append({
+            "role": "user" if role == "user" else "model",
+            "parts": [{"text": text[:8000]}]
+        })
 
     if not contents or contents[-1]["role"] != "user":
-        return jsonify({"error": "The last message must be from the user"}), 400
+        return jsonify({
+            "error": "The last message must be from the user"
+        }), 400
 
     try:
         client = genai.Client(api_key=api_key)
 
         response = client.models.generate_content(
-            model=os.environ.get("GEMINI_MODEL", "gemini-2.5-flash"),
+            model=os.environ.get(
+                "GEMINI_MODEL",
+                "gemini-2.5-flash"
+            ),
             contents=contents,
             config=types.GenerateContentConfig(
                 system_instruction=(
-                    "You are ORVEXA AI, a helpful and honest AI assistant. "
-                    "Respond in the same language as the user."
+                    "You are ORVEXA AI, a helpful, intelligent, "
+                    "and honest AI assistant. "
+                    "Respond in the same language as the user. "
+                    "Explain things clearly and accurately."
                 ),
                 max_output_tokens=1200
             )
@@ -71,13 +88,14 @@ def chat():
 
     except Exception:
         app.logger.exception("Gemini request failed")
+
         return jsonify({
             "error": "AI service temporarily unavailable"
         }), 502
 
-6. اضغط **Commit changes** لحفظ الملف.
 
-**تنبيه:** هذا الملف وحده لا يكفي لتشغيل الخادم؛ سنضيف ملفات المتطلبات وإعدادات التشغيل بعد ذلك.
-
-### أخبرني عندما تنتهي
-هل نجحت في إنشاء `app.py` وحفظه؟
+if __name__ == "__main__":
+    app.run(
+        host="0.0.0.0",
+        port=int(os.environ.get("PORT", "10000"))
+    )
