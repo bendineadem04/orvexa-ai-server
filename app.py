@@ -1,10 +1,12 @@
 import os
 
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 from google import genai
 from google.genai import types
 
 app = Flask(__name__)
+CORS(app, origins=["https://bendineadem04-collab.github.io"])
 
 
 @app.get("/")
