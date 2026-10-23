@@ -104,9 +104,11 @@ def chat():
             "error": "The last message must be from the user."
         }), 400
 
-    client = genai.Client(api_key=api_key)
-    app.logger.info(
-    "Gemini client initialized successfully"
+    client = genai.Client(
+    api_key=api_key.strip()
+)
+
+app.logger.info("Gemini client initialized successfully")
 )
 
     models_to_try = [PRIMARY_MODEL]
