@@ -105,6 +105,9 @@ def chat():
         }), 400
 
     client = genai.Client(api_key=api_key)
+    app.logger.info(
+    "Gemini client initialized successfully"
+)
 
     models_to_try = [PRIMARY_MODEL]
 
